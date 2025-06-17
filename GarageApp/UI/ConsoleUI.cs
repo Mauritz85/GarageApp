@@ -21,7 +21,9 @@ public class ConsoleUI : IUI
         bool running = true;
         while (running)
         {
-            Console.WriteLine("\n1. Parkera fordon\n2. Lista fordon\n0. Avsluta");
+            Console.WriteLine("\nHUVUDMENYN");
+            Console.WriteLine("\n1. Parkera fordon\n2. Hämta fordon\n3. Lista fordon\n0. Avsluta");
+            Console.Write("Ditt val: ");
             string? choice = Console.ReadLine();
             switch (choice)
             {
@@ -29,7 +31,7 @@ public class ConsoleUI : IUI
                     ParkVehicle();
                     break;
                 case "2":
-                    
+                    RemoveVehicle();
                     break;
                 case "3":
                     ListVehicles();
@@ -46,72 +48,67 @@ public class ConsoleUI : IUI
 
     public void ParkVehicle()
     {
-        bool running = true;
-        while (running)
+        Console.WriteLine("\nPARKERA FORDON");
+        Console.WriteLine("\nVälj fordonstyp att parkera:");
+        Console.WriteLine("1. Bil");
+        Console.WriteLine("2. Motorcykel");
+        Console.WriteLine("3. Flygplan");
+        Console.WriteLine("4. Båt");
+        Console.WriteLine("5. Buss");
+        Console.Write("Ditt val: ");
+
+        string choice = AskHelpers.AskChoice();
+
+        switch (choice)
         {
-            Console.WriteLine("\nVälj fordonstyp att parkera:");
-            Console.WriteLine("1. Car");
-            Console.WriteLine("2. Motorcycle");
-            Console.WriteLine("3. Airplane");
-            Console.WriteLine("4. Boat");
-            Console.WriteLine("5. Bus");
-            Console.WriteLine("0. Gå tillbaka till huvudmenyn");
-            Console.Write("Ditt val: ");
-            string? choice = Console.ReadLine();
 
-            switch (choice)
-            {
-                case "0":
-                    running = false;
-                    Console.WriteLine("Återgår till huvudmenyn...");
-                    break;
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+                string regNumber = AskHelpers.AskRegNumber("Vänligen ange regnummer (format: ABC123): ");
+                string color = AskHelpers.AskString("Färg: ");
+                Vehicle? vehicle = choice switch
+                {
+                    "1" => new Car(regNumber, color, AskHelpers.AskString("Bränsletyp (t.ex. Bensin/Diesel): ")),
+                    "2" => new MotorCycle(regNumber, color, AskHelpers.AskBool("Har sidovagn? (j/n): ")),
+                    "3" => new Airplane(regNumber, color, AskHelpers.AskInt("Antal motorer: ")),
+                    "4" => new Boat(regNumber, color, AskHelpers.AskInt("Längd i meter: ")),
+                    "5" => new Bus(regNumber, color, AskHelpers.AskInt("Antal säten: ")),
+                    _ => null
+                };
 
-                case "1":
-                case "2":
-                case "3":
-                case "4":
-                case "5":
-                    string regNumber = AskHelpers.AskRegNumber();
-                    string color = AskHelpers.AskString("Färg: ");
-                    Vehicle? vehicle = choice switch
+                if (vehicle != null)
+                {
+                    var result = handler.ParkVehicle(vehicle);
+
+                    switch (result)
                     {
-                        "1" => new Car(regNumber, color, AskHelpers.AskString("Bränsletyp (t.ex. Bensin/Diesel): ")),
-                        "2" => new MotorCycle(regNumber, color, AskHelpers.AskBool("Har sidovagn? (j/n): ")),
-                        "3" => new Airplane(regNumber, color, AskHelpers.AskInt("Antal motorer: ")),
-                        "4" => new Boat(regNumber, color, AskHelpers.AskInt("Längd i meter: ")),
-                        "5" => new Bus(regNumber, color, AskHelpers.AskInt("Antal säten: ")),
-                        _ => null
-                    };
-
-                    if (vehicle != null)
-                    {
-                        var result = handler.ParkVehicle(vehicle);
-
-                        switch (result)
-                        {
-                            case ParkVehicleFeedback.Success:
-                                Console.WriteLine("Fordonet är nu parkerat!");
-                                break;
-                            case ParkVehicleFeedback.DuplicateRegNumber:
-                                Console.WriteLine("Det finns redan ett fordon med samma registreringsnummer parkerat.");
-                                break;
-                            case ParkVehicleFeedback.GarageFull:
-                                Console.WriteLine("Garaget är fullt. Försök igen senare");
-                                break;
-                        }
+                        case ParkVehicleFeedback.Success:
+                            Console.WriteLine("Fordonet är nu parkerat!");
+                            break;
+                        case ParkVehicleFeedback.DuplicateRegNumber:
+                            Console.WriteLine("Det finns redan ett fordon med samma registreringsnummer parkerat.");
+                            break;
+                        case ParkVehicleFeedback.GarageFull:
+                            Console.WriteLine("Garaget är fullt. Försök igen senare");
+                            break;
                     }
-                    break;
+                }
+                break;
 
-                default:
-                    Console.WriteLine("Felaktigt val. Ange en siffra mellan 0 och 5.");
-                    break;
-            }
+            default:
+                Console.WriteLine("Något gick fel. Tillbaka till huvudmenyn");
+                break;
         }
+
     }
 
     public void RemoveVehicle()
     {
-        string regNumber = AskHelpers.AskRegNumber();
+        Console.WriteLine("\nPARKERA FORDON");
+        string regNumber = AskHelpers.AskRegNumber("Vänligen ange registreringsnummer på bil som ska hämtas: ");
         if (handler.RemoveVehicle(regNumber))
         {
             Console.WriteLine($"Fordon med registreringsnummer {regNumber} togs bort.");

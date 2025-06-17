@@ -5,14 +5,30 @@ namespace GarageApp.Helpers;
 
 internal class AskHelpers
 {
-    public static string AskRegNumber()
+    public static string AskChoice()
+    {
+        char[] allowedChoices = ['1', '2', '3', '4', '5'];
+        string? choice;
+
+        while (true)
+        {
+            choice = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(choice) || choice.Length != 1 || !allowedChoices.Contains(choice[0]))
+            {
+                Console.WriteLine("Felaktigt val. Vänligen ange en siffra 1 och 5:");
+            }
+            else return choice;
+        }
+    }
+    public static string AskRegNumber(string question)
     {
         var regNumberPattern = @"^[A-Za-z]{3}\d{3}$"; 
         var regex = new Regex(regNumberPattern);
 
         while (true)
         {
-            Console.Write("Registreringsnummer: ");
+            Console.Write(question);
             string? input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
@@ -25,7 +41,7 @@ internal class AskHelpers
 
             if (!regex.IsMatch(input))
             {
-                Console.WriteLine("Ogiltigt format. Ange registreringsnummer i formatet ABC123.");
+                Console.WriteLine("Ogiltigt format.");
                 continue;
             }
 
