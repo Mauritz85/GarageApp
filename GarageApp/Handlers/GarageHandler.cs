@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GarageApp.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,10 +33,33 @@ public class GarageHandler : IHandler
     }
 
 
-    public IEnumerable<Vehicle> ListVehicles()
+    public IEnumerable<Vehicle> GetVehicles()
     {
         return garage;
     }
 
-    // Andra metoder: Remove, Search osv
+    public IEnumerable<(string TypeName, int Count)> GetVehicleTypeCounts()
+    {
+        return garage
+            .GroupBy(v => v.GetType().Name)
+            .Select(g => (g.Key, g.Count()));
+    }
+
+    public IEnumerable<Vehicle> SearchVehicles(string? type = null, string? color = null, int? wheels = null)
+    {
+        return garage.Where(v =>
+            (string.IsNullOrEmpty(type) || v.GetType().Name.Equals(Translate.SweToEng(type), StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(color) || v.Color.Equals(color, StringComparison.OrdinalIgnoreCase)) &&
+            (!wheels.HasValue || v.NumberOfWheels == wheels.Value)
+        );
+    }
+
+    public IEnumerable<Vehicle> SearchRegNumber(string regNumber)
+    {
+        return garage.Where(v =>
+            v.RegistrationNumber.Equals(regNumber)
+        );
+    }
+
+
 }

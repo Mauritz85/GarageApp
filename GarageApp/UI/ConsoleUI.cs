@@ -15,14 +15,18 @@ public class ConsoleUI : IUI
     public void Start()
     {
         Console.WriteLine("Välkommen till Garaget!");
-        int size = AskHelpers.AskInt("Hur många platser ska garaget ha? ");
+        int size = Ask.ForInt("Hur många platser ska garaget ha? ");
         handler = new GarageHandler(size);
+
+        handler.ParkVehicle(new Car("ABC123", "Blå", "Bensin"));
+        handler.ParkVehicle(new MotorCycle("ABC124", "Grön", true));
+        handler.ParkVehicle(new Bus("CBA", "Blå", 124));
 
         bool running = true;
         while (running)
         {
             Console.WriteLine("\nHUVUDMENYN");
-            Console.WriteLine("\n1. Parkera fordon\n2. Hämta fordon\n3. Lista fordon\n0. Avsluta");
+            Console.WriteLine("\n1. Parkera fordon\n2. Hämta fordon\n3. Lista parkerade fordon\n4. Sök bland parkerade fordon\n5. Sök efter registreringsnummer\n0. Avsluta");
             Console.Write("Ditt val: ");
             string? choice = Console.ReadLine();
             switch (choice)
@@ -34,7 +38,13 @@ public class ConsoleUI : IUI
                     RemoveVehicle();
                     break;
                 case "3":
-                    ListVehicles();
+                    ListAllVehiclesAndTypes();
+                    break;
+                case "4":
+                    SearchVehicles();
+                    break;
+                case "5":
+                    SearchForRegNumber();
                     break;
                 case "0":
                     running = false;
@@ -57,7 +67,7 @@ public class ConsoleUI : IUI
         Console.WriteLine("5. Buss");
         Console.Write("Ditt val: ");
 
-        string choice = AskHelpers.AskChoice();
+        string choice = Ask.ForChoice();
 
         switch (choice)
         {
@@ -67,15 +77,15 @@ public class ConsoleUI : IUI
             case "3":
             case "4":
             case "5":
-                string regNumber = AskHelpers.AskRegNumber("Vänligen ange regnummer (format: ABC123): ");
-                string color = AskHelpers.AskString("Färg: ");
+                string regNumber = Ask.ForRegNumber("Vänligen ange regnummer (format: ABC123): ");
+                string color = Ask.ForString("Färg: ");
                 Vehicle? vehicle = choice switch
                 {
-                    "1" => new Car(regNumber, color, AskHelpers.AskString("Bränsletyp (t.ex. Bensin/Diesel): ")),
-                    "2" => new MotorCycle(regNumber, color, AskHelpers.AskBool("Har sidovagn? (j/n): ")),
-                    "3" => new Airplane(regNumber, color, AskHelpers.AskInt("Antal motorer: ")),
-                    "4" => new Boat(regNumber, color, AskHelpers.AskInt("Längd i meter: ")),
-                    "5" => new Bus(regNumber, color, AskHelpers.AskInt("Antal säten: ")),
+                    "1" => new Car(regNumber, color, Ask.ForString("Bränsletyp (t.ex. Bensin/Diesel): ")),
+                    "2" => new MotorCycle(regNumber, color, Ask.ForBool("Har sidovagn? (j/n): ")),
+                    "3" => new Airplane(regNumber, color, Ask.ForInt("Antal motorer: ")),
+                    "4" => new Boat(regNumber, color, Ask.ForInt("Längd i meter: ")),
+                    "5" => new Bus(regNumber, color, Ask.ForInt("Antal säten: ")),
                     _ => null
                 };
 
@@ -107,11 +117,11 @@ public class ConsoleUI : IUI
 
     public void RemoveVehicle()
     {
-        Console.WriteLine("\nPARKERA FORDON");
-        string regNumber = AskHelpers.AskRegNumber("Vänligen ange registreringsnummer på bil som ska hämtas: ");
+        Console.WriteLine("\nHÄMTA FORDON");
+        string regNumber = Ask.ForRegNumber("Vänligen ange registreringsnummer på bil som ska hämtas: ");
         if (handler.RemoveVehicle(regNumber))
         {
-            Console.WriteLine($"Fordon med registreringsnummer {regNumber} togs bort.");
+            Console.WriteLine($"Fordon med registreringsnummer {regNumber} har nu lämnat garaget.");
         }
         else
         {
@@ -120,13 +130,75 @@ public class ConsoleUI : IUI
     }
 
 
-    private void ListVehicles()
+    public void ListAllVehiclesAndTypes()
     {
-        foreach (var vehicle in handler.ListVehicles())
+        var vehicles = handler.GetVehicles();
+        if (!vehicles.Any())
         {
-            Console.WriteLine($"{vehicle.GetType().Name} - {vehicle.RegistrationNumber}");
+            Console.WriteLine("Inga fordon parkerade.");
+            return;
+        }
+        Console.WriteLine("\nLista på fordon:");
+        foreach (var vehicle in vehicles)
+        {
+            Console.WriteLine($"{Translate.EngToSwe(vehicle.GetType().Name)} - {vehicle.RegistrationNumber} - Färg: {vehicle.Color} - Antal hjul: {vehicle.NumberOfWheels}");
+        }
+
+        var typeCounts = handler.GetVehicleTypeCounts();
+        Console.WriteLine("\nSummering:");
+        foreach (var (type, count) in typeCounts)
+        {
+            Console.WriteLine($"{Translate.EngToSwe(type)}: {count}");
         }
     }
+
+    public void SearchVehicles()
+    {
+        Console.WriteLine("\n--- Sök fordon ---");
+        string? type = Ask.ForStringOrNull("Fordonstyp (t.ex. Bil, Båt), lämna tomt för att ignorera: ");
+        string? color = Ask.ForStringOrNull("Färg, lämna tomt för att ignorera: ");
+        int? wheels = Ask.ForIntOrNull("Antal hjul, lämna tomt för att ignorera: ");
+       
+        var results = handler.SearchVehicles(
+            type,
+            color,
+            wheels
+        );
+
+        if (!results.Any())
+            Console.WriteLine("Inga fordon matchade sökkriterierna.");
+        else
+        {
+            Console.WriteLine("\nMatchande fordon:");
+            foreach (var vehicle in results)    
+                Console.WriteLine($"{Translate.EngToSwe(vehicle.GetType().Name)} - {vehicle.RegistrationNumber} - Färg: {vehicle.Color} - Antal hjul: {vehicle.NumberOfWheels}");
+        }
+    }
+
+    public void SearchForRegNumber()
+    {
+        Console.WriteLine("\n--- Sök fordon med registreringsnummer ---");
+        string? regNumber = Ask.ForRegNumber("Fyll i registreringsnummer (Format: ABC123): ");
+
+        var results = handler.SearchRegNumber(
+            regNumber
+        );
+
+        if (!results.Any())
+            Console.WriteLine("Inga fordon matchade sökkriterierna.");
+        else
+        {
+            Console.WriteLine("\nMatchande fordon:");
+            foreach (var vehicle in results)
+                Console.WriteLine($"{Translate.EngToSwe(vehicle.GetType().Name)} - {vehicle.RegistrationNumber} - Färg: {vehicle.Color} - Antal hjul: {vehicle.NumberOfWheels}");
+        }
+    }
+
+
+
+
+
+
 }
 
 
