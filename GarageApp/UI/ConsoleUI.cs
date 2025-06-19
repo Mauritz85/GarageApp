@@ -20,7 +20,7 @@ public class ConsoleUI : IUI
 
         handler.ParkVehicle(new Car("ABC123", "Blå", "Bensin"));
         handler.ParkVehicle(new MotorCycle("ABC124", "Grön", true));
-        handler.ParkVehicle(new Bus("CBA", "Blå", 124));
+        handler.ParkVehicle(new Bus("CBA321", "Blå", 124));
 
         bool running = true;
         while (running)
@@ -58,76 +58,74 @@ public class ConsoleUI : IUI
 
     public void ParkVehicle()
     {
-        Console.WriteLine("\nPARKERA FORDON");
         Console.WriteLine("\nVälj fordonstyp att parkera:");
-        Console.WriteLine("1. Bil");
-        Console.WriteLine("2. Motorcykel");
-        Console.WriteLine("3. Flygplan");
-        Console.WriteLine("4. Båt");
-        Console.WriteLine("5. Buss");
+        Console.WriteLine("1. Bil\n2. Motorcykel\n3. Flygplan\n4. Båt\n5. Buss");
         Console.Write("Ditt val: ");
-
         string choice = Ask.ForChoice();
 
-        switch (choice)
+        Vehicle? vehicle = CreateVehicleFromUser(choice);
+        if (vehicle is null)
         {
-
-            case "1":
-            case "2":
-            case "3":
-            case "4":
-            case "5":
-                string regNumber = Ask.ForRegNumber("Vänligen ange regnummer (format: ABC123): ");
-                string color = Ask.ForString("Färg: ");
-                Vehicle? vehicle = choice switch
-                {
-                    "1" => new Car(regNumber, color, Ask.ForString("Bränsletyp (t.ex. Bensin/Diesel): ")),
-                    "2" => new MotorCycle(regNumber, color, Ask.ForBool("Har sidovagn? (j/n): ")),
-                    "3" => new Airplane(regNumber, color, Ask.ForInt("Antal motorer: ")),
-                    "4" => new Boat(regNumber, color, Ask.ForInt("Längd i meter: ")),
-                    "5" => new Bus(regNumber, color, Ask.ForInt("Antal säten: ")),
-                    _ => null
-                };
-
-                if (vehicle != null)
-                {
-                    var result = handler.ParkVehicle(vehicle);
-
-                    switch (result)
-                    {
-                        case ParkVehicleFeedback.Success:
-                            Console.WriteLine("Fordonet är nu parkerat!");
-                            break;
-                        case ParkVehicleFeedback.DuplicateRegNumber:
-                            Console.WriteLine("Det finns redan ett fordon med samma registreringsnummer parkerat.");
-                            break;
-                        case ParkVehicleFeedback.GarageFull:
-                            Console.WriteLine("Garaget är fullt. Försök igen senare");
-                            break;
-                    }
-                }
-                break;
-
-            default:
-                Console.WriteLine("Något gick fel. Tillbaka till huvudmenyn");
-                break;
+            Console.WriteLine("Ogiltigt val.");
+            return;
         }
 
+        var result = handler.ParkVehicle(vehicle);
+        switch (result)
+        {
+            case ParkVehicleFeedback.Success:
+                Console.WriteLine("Fordonet är nu parkerat!");
+                break;
+            case ParkVehicleFeedback.DuplicateRegNumber:
+                Console.WriteLine("Det finns redan ett fordon med detta regnummer i garaget.");
+                break;
+            case ParkVehicleFeedback.GarageFull:
+                Console.WriteLine("Garaget är fullt.");
+                break;
+            case ParkVehicleFeedback.InvalidVehicle:
+                Console.WriteLine("Felaktigt fordon.");
+                break;
+        }
     }
+
+    private Vehicle? CreateVehicleFromUser(string choice)
+    {
+        string regNumber = Ask.ForRegNumber("Regnummer (Format: ABC123): ");
+        string color = Ask.ForString("Färg (Blå, Grön..): ");
+
+        return choice switch
+        {
+            "1" => new Car(regNumber, color, Ask.ForString("Bränsle (Bensin/Diesel): ")),
+            "2" => new MotorCycle(regNumber, color, Ask.ForBool("Har sidovagn? (j/n): ")),
+            "3" => new Airplane(regNumber, color, Ask.ForInt("Antal motorer: ")),
+            "4" => new Boat(regNumber, color, Ask.ForInt("Längd (m): ")),
+            "5" => new Bus(regNumber, color, Ask.ForInt("Antal säten: ")),
+            _ => null
+        };
+    }
+
 
     public void RemoveVehicle()
     {
         Console.WriteLine("\nHÄMTA FORDON");
-        string regNumber = Ask.ForRegNumber("Vänligen ange registreringsnummer på bil som ska hämtas: ");
-        if (handler.RemoveVehicle(regNumber))
+        string regNumber = Ask.ForRegNumber("Ange registreringsnummer (Format: ABC123) på fordon som ska hämtas: ");
+
+        var result = handler.RemoveVehicle(regNumber);
+
+        switch (result)
         {
-            Console.WriteLine($"Fordon med registreringsnummer {regNumber} har nu lämnat garaget.");
-        }
-        else
-        {
-            Console.WriteLine($"Inget fordon med registreringsnummer {regNumber} hittades.");
+            case RemoveVehicleFeedback.Success:
+                Console.WriteLine($"Fordon med registreringsnummer {regNumber} har nu lämnat garaget.");
+                break;
+            case RemoveVehicleFeedback.NotFound:
+                Console.WriteLine($"Inget fordon med registreringsnummer {regNumber} hittades.");
+                break;
+            default:
+                Console.WriteLine("Ett oväntat fel inträffade.");
+                break;
         }
     }
+
 
 
     public void ListAllVehiclesAndTypes()
@@ -145,7 +143,7 @@ public class ConsoleUI : IUI
         }
 
         var typeCounts = handler.GetVehicleTypeCounts();
-        Console.WriteLine("\nSummering:");
+        Console.WriteLine("\nSummering (antal typer):");
         foreach (var (type, count) in typeCounts)
         {
             Console.WriteLine($"{Translate.EngToSwe(type)}: {count}");
@@ -158,7 +156,7 @@ public class ConsoleUI : IUI
         string? type = Ask.ForStringOrNull("Fordonstyp (t.ex. Bil, Båt), lämna tomt för att ignorera: ");
         string? color = Ask.ForStringOrNull("Färg, lämna tomt för att ignorera: ");
         int? wheels = Ask.ForIntOrNull("Antal hjul, lämna tomt för att ignorera: ");
-       
+
         var results = handler.SearchVehicles(
             type,
             color,
@@ -170,7 +168,7 @@ public class ConsoleUI : IUI
         else
         {
             Console.WriteLine("\nMatchande fordon:");
-            foreach (var vehicle in results)    
+            foreach (var vehicle in results)
                 Console.WriteLine($"{Translate.EngToSwe(vehicle.GetType().Name)} - {vehicle.RegistrationNumber} - Färg: {vehicle.Color} - Antal hjul: {vehicle.NumberOfWheels}");
         }
     }

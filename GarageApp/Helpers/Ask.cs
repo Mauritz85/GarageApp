@@ -41,7 +41,7 @@ internal class Ask
 
             if (!regex.IsMatch(input))
             {
-                Console.WriteLine("Ogiltigt format.");
+                Console.WriteLine("Ogiltigt format. Försök igen (format ABC123):");
                 continue;
             }
 

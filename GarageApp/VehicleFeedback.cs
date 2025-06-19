@@ -10,5 +10,12 @@ public enum ParkVehicleFeedback
 {
     Success,
     DuplicateRegNumber,
-    GarageFull
+    GarageFull,
+    InvalidVehicle
+}
+
+public enum RemoveVehicleFeedback
+{
+    Success,
+    NotFound
 }

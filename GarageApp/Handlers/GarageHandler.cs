@@ -17,20 +17,21 @@ public class GarageHandler : IHandler
     }
 
     public ParkVehicleFeedback ParkVehicle(Vehicle vehicle)
+        => garage.AddVehicle(vehicle);
+
+
+    public RemoveVehicleFeedback RemoveVehicle(string regNumber)
     {
-        if (garage.Any(v => v.RegistrationNumber == vehicle.RegistrationNumber))
-            return ParkVehicleFeedback.DuplicateRegNumber;
+        if (string.IsNullOrWhiteSpace(regNumber))
+            return RemoveVehicleFeedback.NotFound;
 
-        if (!garage.ParkVehicle(vehicle))
-            return ParkVehicleFeedback.GarageFull;
+        bool removed = garage.RemoveVehicle(regNumber);
 
-        return ParkVehicleFeedback.Success;
+        return removed
+            ? RemoveVehicleFeedback.Success
+            : RemoveVehicleFeedback.NotFound;
     }
 
-    public bool RemoveVehicle(string registrationNumber)
-    {
-        return garage.RemoveVehicle(registrationNumber);
-    }
 
 
     public IEnumerable<Vehicle> GetVehicles()
