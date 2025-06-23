@@ -1,10 +1,6 @@
 ﻿using GarageApp.Handlers;
 using GarageApp.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace GarageApp.UI;
 
@@ -15,12 +11,12 @@ public class ConsoleUI : IUI
     public void Start()
     {
         Console.WriteLine("Välkommen till Garaget!");
-        int size = Ask.ForInt("Hur många platser ska garaget ha? ");
-        handler = new GarageHandler(size);
+        
+        int capacity = Ask.ForInt("Hur många platser ska garaget ha? ");
+        handler = new GarageHandler(capacity);
+        Console.WriteLine($"Ett garage med {capacity} platser har skapats.");
 
-        handler.ParkVehicle(new Car("ABC123", "Blå", "Bensin"));
-        handler.ParkVehicle(new MotorCycle("ABC124", "Grön", true));
-        handler.ParkVehicle(new Bus("CBA321", "Blå", 124));
+        GarageSeeder.SeedData(handler, capacity);
 
         bool running = true;
         while (running)
@@ -77,7 +73,7 @@ public class ConsoleUI : IUI
                 Console.WriteLine("Fordonet är nu parkerat!");
                 break;
             case ParkVehicleFeedback.DuplicateRegNumber:
-                Console.WriteLine("Det finns redan ett fordon med detta regnummer i garaget.");
+                Console.WriteLine("\nParkering misslyckades. Det finns redan ett fordon med detta registreringsnummer i garaget.");
                 break;
             case ParkVehicleFeedback.GarageFull:
                 Console.WriteLine("Garaget är fullt.");

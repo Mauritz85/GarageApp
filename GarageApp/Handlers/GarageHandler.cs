@@ -17,7 +17,15 @@ public class GarageHandler : IHandler
     }
 
     public ParkVehicleFeedback ParkVehicle(Vehicle vehicle)
-        => garage.AddVehicle(vehicle);
+    {
+        if (vehicle == null)
+            return ParkVehicleFeedback.InvalidVehicle;
+
+        if (!IsValidRegNumber(vehicle.RegistrationNumber))
+            return ParkVehicleFeedback.InvalidVehicle;
+
+        return garage.AddVehicle(vehicle);
+    }
 
 
     public RemoveVehicleFeedback RemoveVehicle(string regNumber)
@@ -62,5 +70,12 @@ public class GarageHandler : IHandler
         );
     }
 
+    private bool IsValidRegNumber(string regNumber)
+    {
+        if (string.IsNullOrWhiteSpace(regNumber))
+            return false;
 
+        var regex = new System.Text.RegularExpressions.Regex(@"^[A-Z]{3}[0-9]{3}$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return regex.IsMatch(regNumber);
+    }
 }

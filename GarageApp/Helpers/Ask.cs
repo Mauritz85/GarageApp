@@ -16,7 +16,7 @@ internal class Ask
 
             if (string.IsNullOrWhiteSpace(choice) || choice.Length != 1 || !allowedChoices.Contains(choice[0]))
             {
-                Console.WriteLine("Felaktigt val. Vänligen ange en siffra 1 och 5:");
+                Console.WriteLine("Felaktigt val. Vänligen ange en siffra mellan 1 och 5:");
             }
             else return choice;
         }
@@ -41,7 +41,7 @@ internal class Ask
 
             if (!regex.IsMatch(input))
             {
-                Console.WriteLine("Ogiltigt format. Försök igen (format ABC123):");
+                Console.WriteLine("Ogiltigt format.");
                 continue;
             }
 
@@ -106,7 +106,8 @@ internal class Ask
             Console.Write(question);
             if (int.TryParse(Console.ReadLine(), out int input))
                 return input;
-            Console.WriteLine($"Felaktig inmatning. Ange ett heltal. {question}");
+            else
+                Console.WriteLine($"Felaktig inmatning. Ange ett heltal. {question}");
         }
     }
 
@@ -124,7 +125,8 @@ internal class Ask
             {
                 return parsedInput;
             }
-            Console.WriteLine($"Felaktig inmatning. Ange ett heltal. {question}");
+            else
+                Console.WriteLine($"Felaktig inmatning. Ange ett heltal. {question}");
         }
     }
 
