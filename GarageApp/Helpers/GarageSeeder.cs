@@ -10,7 +10,7 @@ internal static class GarageSeeder
         Vehicle[] initVehicles = new Vehicle[]
         {
             new Car("ABC123", "Blå", "Bensin"),
-            new MotorCycle("ABC123", "Vit", false),
+            new MotorCycle("MNO222", "Vit", false),
             new Airplane("VWX555", "Blå", 4),
             new Boat("BCD777", "Grön", 12),
             new Bus("NOP111", "Gul", 40),
